@@ -2,8 +2,8 @@
 A static web tool to transform indented text outlines  into beautiful tree diagrams. exportable to pdf and png
 
 #### Repo structure:
-'''text
-/arborly
+```text
+arborly/
 ├── index.html
 ├── styles/
 │   └── main.css
@@ -12,4 +12,4 @@ A static web tool to transform indented text outlines  into beautiful tree diagr
 │   ├── renderer.js (to draw tree)
 │   └── exporter.js (PDF/PNG/SVG)
 └── README.md
-'''
+```
