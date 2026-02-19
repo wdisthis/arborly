@@ -1,13 +1,15 @@
 # arborly
 A static web tool to transform indented text outlines  into beautiful tree diagrams. exportable to pdf and png
 
-####Repo structure:
+#### Repo structure:
+'''text
 /arborly
 ├── index.html
 ├── styles/
 │   └── main.css
 ├── js/
-│   ├── parser.js (Untuk mengolah indentasi)
-│   ├── renderer.js (Untuk menggambar pohon)
-│   └── exporter.js (Untuk fungsi PDF/PNG)
+│   ├── parser.js (to precessing inndentation)
+│   ├── renderer.js (to draw tree)
+│   └── exporter.js (PDF/PNG/SVG)
 └── README.md
+'''
