@@ -1,42 +1,170 @@
+let i = 0;
+
 function renderTree(data) {
     const container = document.getElementById('tree-container');
     container.innerHTML = ''; // Clear preview
 
     if (!data) return;
 
-    const width = container.clientWidth;
-    const height = container.clientHeight || 500;
+    const containerSvg = d3.select("#tree-container").append("svg");
+    const gElement = containerSvg.append("g");
 
-    const svg = d3.select("#tree-container").append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .append("g")
-        .attr("transform", "translate(50, 50)");
+    // Gunakan nodeSize agar jarak antar node konstan dan tidak mengecil jika tree membesar
+    const treeLayout = d3.tree().nodeSize([60, 250]); 
 
-    const treeLayout = d3.tree().size([height - 100, width - 200]);
     const root = d3.hierarchy(data);
-    treeLayout(root);
+    root.x0 = 0;
+    root.y0 = 0;
 
-    // Links (Garis)
-    svg.selectAll(".link")
-        .data(root.links())
-        .enter().append("path")
-        .attr("class", "link")
-        .attr("d", d3.linkHorizontal()
-            .x(d => d.y)
-            .y(d => d.x));
+    function update(source) {
+        const treeData = treeLayout(root);
+        const nodes = treeData.descendants();
+        const links = treeData.links();
 
-    // Nodes
-    const node = svg.selectAll(".node")
-        .data(root.descendants())
-        .enter().append("g")
-        .attr("class", "node")
-        .attr("transform", d => `translate(${d.y},${d.x})`);
+        // Hitung batas ukuran tree untuk ukuran SVG dinamis (mencegah terpotong)
+        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+        root.each(d => {
+            if (d.x > x1) x1 = d.x;
+            if (d.x < x0) x0 = d.x;
+            if (d.y > y1) y1 = d.y;
+            if (d.y < y0) y0 = d.y;
+        });
 
-    node.append("circle").attr("r", 5);
-    node.append("text")
-        .attr("dy", ".35em")
-        .attr("x", d => d.children ? -13 : 13)
-        .style("text-anchor", d => d.children ? "end" : "start")
-        .text(d => d.data.name);
+        if (x1 === -Infinity) { x0 = 0; x1 = 0; y0 = 0; y1 = 0; }
+
+        const paddingY = 100;
+        const paddingX = 350; // Extra space for long text on the right
+        const svgWidth = Math.max(container.clientWidth, y1 - Math.min(0, y0) + paddingX);
+        const svgHeight = Math.max(container.clientHeight, x1 - x0 + paddingY);
+
+        containerSvg
+            .transition()
+            .duration(500)
+            .attr("width", svgWidth)
+            .attr("height", svgHeight);
+
+        // Center tree vertically and pad left
+        const translateY = paddingY / 2 - x0;
+        const translateX = 50;
+        gElement.transition()
+            .duration(500)
+            .attr("transform", `translate(${translateX}, ${translateY})`);
+
+        // UPDATE NODES
+        const node = gElement.selectAll('g.node')
+            .data(nodes, d => d.id || (d.id = ++i));
+
+        // ENTER new nodes
+        const nodeEnter = node.enter().append('g')
+            .attr('class', 'node')
+            .attr("transform", d => `translate(${source.y0},${source.x0})`)
+            .on('click', click);
+
+        // Tambahkan kotak pembungkus (rounded rectangle)
+        nodeEnter.append('rect')
+            .attr('class', 'node-rect')
+            .attr('rx', 6)
+            .attr('ry', 6)
+            .attr('x', 0)
+            .attr('y', -15)
+            .attr('height', 30)
+            .attr('width', d => Math.max(50, d.data.name.length * 8 + 20))
+            .style("fill", d => d._children ? "#005533" : "#1e1e1e")
+            .style("stroke", "#00ff88")
+            .style("stroke-width", "2px")
+            .style("cursor", d => d.children || d._children ? "pointer" : "default");
+
+        // Tambahkan text label
+        nodeEnter.append('text')
+            .attr("dy", ".35em")
+            .attr("x", 10)
+            .style("fill", "#ccc")
+            .style("font-size", "14px")
+            .style("font-family", "sans-serif")
+            .style("cursor", d => d.children || d._children ? "pointer" : "default")
+            .text(d => d.data.name);
+
+        // UPDATE existing nodes
+        const nodeUpdate = nodeEnter.merge(node);
+
+        nodeUpdate.transition()
+            .duration(500)
+            .attr("transform", d => `translate(${d.y},${d.x})`);
+
+        nodeUpdate.select('rect.node-rect')
+            .attr('width', d => Math.max(50, d.data.name.length * 8 + 20))
+            .style("fill", d => d._children ? "#005533" : "#1e1e1e");
+
+        // EXIT nodes
+        const nodeExit = node.exit().transition()
+            .duration(500)
+            .attr("transform", d => `translate(${source.y},${source.x})`)
+            .remove();
+
+        nodeExit.select('rect').attr('width', 0).attr('height', 0);
+        nodeExit.select('text').style('fill-opacity', 1e-6);
+
+        // UPDATE LINKS
+        const link = gElement.selectAll('path.link')
+            .data(links, d => d.target.id);
+
+        const linkEnter = link.enter().insert('path', "g")
+            .attr("class", "link")
+            .attr('d', d => {
+                const o = {x: source.x0, y: source.y0};
+                return diagonal(o, o);
+            })
+            .style("fill", "none")
+            .style("stroke", "#444")
+            .style("stroke-width", "2px");
+
+        const linkUpdate = linkEnter.merge(link);
+
+        linkUpdate.transition()
+            .duration(500)
+            .attr('d', d => diagonal(d.source, d.target));
+
+        link.exit().transition()
+            .duration(500)
+            .attr('d', d => {
+                const o = {x: source.x, y: source.y};
+                return diagonal(o, o);
+            })
+            .remove();
+
+        // Simpan posisi untuk animasi berikutnya
+        nodes.forEach(d => {
+            d.x0 = d.x;
+            d.y0 = d.y;
+        });
+
+        // Buat garis kurva dari kanan kotak parent ke kiri kotak child
+        function diagonal(s, d) {
+            // Lebar kotak parent
+            const rectWidth = s.data.name ? Math.max(50, s.data.name.length * 8 + 20) : 0;
+            // Garis mulai dari ujung kanan parent
+            const sourceY = s.y + rectWidth;
+            // Garis berujung di ujung kiri child
+            const targetY = d.y;
+            
+            return `M ${sourceY} ${s.x}
+                    C ${(sourceY + targetY) / 2} ${s.x},
+                      ${(sourceY + targetY) / 2} ${d.x},
+                      ${targetY} ${d.x}`;
+        }
+
+        // Fungsi klik untuk expand/collapse
+        function click(event, d) {
+            if (d.children) {
+                d._children = d.children;
+                d.children = null;
+            } else {
+                d.children = d._children;
+                d._children = null;
+            }
+            update(d);
+        }
+    }
+
+    update(root);
 }

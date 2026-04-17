@@ -12,6 +12,8 @@ header {
     border-bottom: 1px solid #333;
 }
 
+.actions { display: flex; gap: 10px; }
+
 main { flex: 1; display: flex; overflow: hidden; }
 
 .editor-pane { width: 30%; border-right: 1px solid #333; }
@@ -24,11 +26,14 @@ textarea {
 
 .preview-pane { flex: 1; background: #1a1a1a; position: relative; overflow: auto; }
 
-.node circle { fill: #00ff88; stroke: #fff; stroke-width: 2px; }
-.node text { font: 12px sans-serif; fill: #ccc; }
+/* The styles below are mostly handled via JS, but we can leave link for fallback */
 .link { fill: none; stroke: #444; stroke-width: 2px; }
 
 button {
     background: #00ff88; color: #000; border: none;
     padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;
+    transition: background 0.2s, transform 0.1s;
 }
+
+button:hover { background: #00cc6a; transform: translateY(-1px); }
+button:active { transform: translateY(1px); }

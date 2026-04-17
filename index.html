@@ -7,13 +7,17 @@
     <link rel="stylesheet" href="styles/main.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="app-container">
         <header>
             <h1>Arborly</h1>
             <div class="actions">
-                <button id="btn-export">Export PNG</button>
+                <button id="btn-export-png">PNG</button>
+                <button id="btn-export-pdf">PDF</button>
+                <button id="btn-export-svg">SVG</button>
+                <button id="btn-export-html">HTML</button>
             </div>
         </header>
         
@@ -35,7 +39,30 @@ Parent
     <script src="js/exporter.js"></script>
     <script>
         const input = document.getElementById('text-input');
+        
         input.addEventListener('input', () => {
+            const treeData = parseIndentedText(input.value);
+            renderTree(treeData);
+        });
+
+        // Dukungan Tab untuk indentasi
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                // Masukkan 2 spasi
+                input.value = input.value.substring(0, start) + "  " + input.value.substring(end);
+                // Kembalikan kursor
+                input.selectionStart = input.selectionEnd = start + 2;
+                
+                // Memicu event input agar tree terupdate
+                input.dispatchEvent(new Event('input'));
+            }
+        });
+
+        // Render awal jika ada teks bawaan
+        window.addEventListener('DOMContentLoaded', () => {
             const treeData = parseIndentedText(input.value);
             renderTree(treeData);
         });
