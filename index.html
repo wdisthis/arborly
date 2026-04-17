@@ -1,16 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>arborly</title>
+    <title>Arborly - Indented Tree Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <h1>
-        tes tes tes
-    </h1>
-    <p>
-        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Veniam quasi aut dolorem! Quasi dolore omnis voluptas neque mollitia est modi deserunt earum voluptates sed doloribus vitae quo molestiae, dolores quam.
-    </p>
+    <div class="app-container">
+        <header>
+            <h1>Arborly</h1>
+            <div class="actions">
+                <button id="btn-export-png">PNG</button>
+                <button id="btn-export-pdf">PDF</button>
+                <button id="btn-export-svg">SVG</button>
+                <button id="btn-export-html">HTML</button>
+            </div>
+        </header>
+        
+        <main>
+            <div class="editor-pane">
+                <div class="sidebar-header">
+                    <h2>Struktur Diagram</h2>
+                    <input type="file" id="file-upload" accept=".txt">
+                    <button class="upload-btn" onclick="document.getElementById('file-upload').click()">Upload TXT</button>
+                </div>
+                <textarea id="text-input" placeholder="Tulis struktur di sini...
+Parent
+  Child 1
+    Grandchild
+  Child 2"></textarea>
+            </div>
+            <div class="preview-pane" id="tree-container">
+                </div>
+        </main>
+    </div>
+
+    <script src="js/parser.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/exporter.js"></script>
+    <script>
+        const input = document.getElementById('text-input');
+        
+        input.addEventListener('input', () => {
+            const treeData = parseIndentedText(input.value);
+            renderTree(treeData);
+        });
+
+        // Dukungan Tab untuk indentasi & Enter untuk auto-indent
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                // Masukkan 2 spasi
+                input.value = input.value.substring(0, start) + "  " + input.value.substring(end);
+                // Kembalikan kursor
+                input.selectionStart = input.selectionEnd = start + 2;
+                
+                // Memicu event input agar tree terupdate
+                input.dispatchEvent(new Event('input'));
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                const value = input.value;
+                
+                // Cari indentasi di baris saat ini
+                const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+                const currentLine = value.substring(lineStart, start);
+                const indentMatch = currentLine.match(/^\s*/);
+                const indent = indentMatch ? indentMatch[0] : "";
+                
+                input.value = value.substring(0, start) + "\n" + indent + value.substring(end);
+                input.selectionStart = input.selectionEnd = start + 1 + indent.length;
+                
+                input.dispatchEvent(new Event('input'));
+            }
+        });
+
+        // Dukungan Upload TXT
+        document.getElementById('file-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                input.value = e.target.result;
+                input.dispatchEvent(new Event('input'));
+            };
+            reader.readAsText(file);
+            // Reset input file agar file yang sama bisa diupload ulang
+            e.target.value = '';
+        });
+
+        // Render awal jika ada teks bawaan
+        window.addEventListener('DOMContentLoaded', () => {
+            const treeData = parseIndentedText(input.value);
+            renderTree(treeData);
+        });
+    </script>
 </body>
 </html>
