@@ -8,53 +8,79 @@ function downloadFile(url, filename) {
     document.body.removeChild(link);
 }
 
+// Helper: Convert SVG to Canvas natively
+function svgToCanvas(svgElement, callback) {
+    // Pastikan namespace ada
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    
+    // Set style default untuk text karena font luar mungkin tidak ter-render sempurna
+    const style = document.createElement("style");
+    style.innerHTML = "text { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500; fill: #0f172a; }";
+    svgElement.insertBefore(style, svgElement.firstChild);
+
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    svgElement.removeChild(style); // Bersihkan style kembali
+    
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+    
+    const width = parseFloat(svgElement.getAttribute("width")) || 1000;
+    const height = parseFloat(svgElement.getAttribute("height")) || 1000;
+    
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = function() {
+        const canvas = document.createElement("canvas");
+        // Gunakan scale 2 untuk resolusi tinggi (Retina)
+        const scale = 2;
+        canvas.width = width * scale;
+        canvas.height = height * scale;
+        
+        const ctx = canvas.getContext("2d");
+        ctx.scale(scale, scale);
+        
+        // Background putih
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+        
+        // Draw image
+        ctx.drawImage(img, 0, 0, width, height);
+        URL.revokeObjectURL(url);
+        callback(canvas);
+    };
+    img.src = url;
+}
+
 // 1. Export PNG
 document.getElementById('btn-export-png').addEventListener('click', () => {
-    const container = document.getElementById('tree-container');
-    const svgElement = container.querySelector('svg');
+    const svgElement = document.querySelector('#tree-container svg');
     if (!svgElement) return;
 
-    // Ambil ukuran asli SVG (tidak terpotong scroll)
-    const width = parseFloat(svgElement.getAttribute("width"));
-    const height = parseFloat(svgElement.getAttribute("height"));
-
-    // Gunakan elemen SVG langsung agar tidak terpotong oleh overflow container
-    html2canvas(svgElement, {
-        backgroundColor: "#ffffff",
-        scale: 2,
-        width: width,
-        height: height
-    }).then(canvas => {
+    svgToCanvas(svgElement, (canvas) => {
         downloadFile(canvas.toDataURL("image/png"), 'arborly-diagram.png');
     });
 });
 
 // 2. Export PDF
 document.getElementById('btn-export-pdf').addEventListener('click', () => {
-    const container = document.getElementById('tree-container');
-    const svgElement = container.querySelector('svg');
+    const svgElement = document.querySelector('#tree-container svg');
     if (!svgElement) return;
 
-    const width = parseFloat(svgElement.getAttribute("width"));
-    const height = parseFloat(svgElement.getAttribute("height"));
-
-    html2canvas(svgElement, {
-        backgroundColor: "#ffffff",
-        scale: 2,
-        width: width,
-        height: height
-    }).then(canvas => {
+    svgToCanvas(svgElement, (canvas) => {
         const imgData = canvas.toDataURL('image/png');
-        
-        // Buat PDF sesuai ukuran canvas
         const { jsPDF } = window.jspdf;
+        
+        // Format ukuran ke px aslinya (bukan scaled)
+        const origWidth = canvas.width / 2;
+        const origHeight = canvas.height / 2;
+        
         const pdf = new jsPDF({
-            orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+            orientation: origWidth > origHeight ? 'landscape' : 'portrait',
             unit: 'px',
-            format: [canvas.width, canvas.height]
+            format: [origWidth, origHeight]
         });
         
-        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.addImage(imgData, 'PNG', 0, 0, origWidth, origHeight);
         pdf.save('arborly-diagram.pdf');
     });
 });
@@ -64,9 +90,7 @@ document.getElementById('btn-export-svg').addEventListener('click', () => {
     const svgElement = document.querySelector('#tree-container svg');
     if (!svgElement) return;
 
-    // Pastikan namespace XML diset
     svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
     const svgData = new XMLSerializer().serializeToString(svgElement);
     const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);

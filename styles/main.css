@@ -133,16 +133,24 @@ button:active {
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-/* Primary style for the first button */
-button#btn-export-png {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
-button#btn-export-png:hover {
-    background: var(--primary-hover);
-    border-color: var(--primary-hover);
+.sidebar-header h2 {
+    margin: 0; font-size: 14px; color: var(--text-secondary);
 }
+.upload-btn {
+    font-size: 12px; padding: 4px 10px;
+    background: var(--surface); color: var(--text-primary); 
+    border: 1px solid var(--border-light); border-radius: 6px; 
+    cursor: pointer; transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.upload-btn:hover { background: var(--surface-editor); border-color: #cbd5e1; transform: translateY(-1px); }
+#file-upload { display: none; }
 
 /* The styles below are mostly handled via JS */
 .link { fill: none; stroke: #cbd5e1; stroke-width: 1.5px; }
