@@ -20,7 +20,7 @@ document.getElementById('btn-export-png').addEventListener('click', () => {
 
     // Gunakan elemen SVG langsung agar tidak terpotong oleh overflow container
     html2canvas(svgElement, {
-        backgroundColor: "#1a1a1a",
+        backgroundColor: "#ffffff",
         scale: 2,
         width: width,
         height: height
@@ -39,7 +39,7 @@ document.getElementById('btn-export-pdf').addEventListener('click', () => {
     const height = parseFloat(svgElement.getAttribute("height"));
 
     html2canvas(svgElement, {
-        backgroundColor: "#1a1a1a",
+        backgroundColor: "#ffffff",
         scale: 2,
         width: width,
         height: height
@@ -91,12 +91,12 @@ document.getElementById('btn-export-html').addEventListener('click', () => {
     <style>
         body {
             margin: 0; padding: 50px;
-            background: #1a1a1a;
+            background: #ffffff;
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh;
         }
         /* Agar tulisan rapi */
-        text { font-family: sans-serif; font-size: 14px; }
+        text { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500; fill: #0f172a; }
     </style>
 </head>
 <body>

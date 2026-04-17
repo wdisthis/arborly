@@ -1,39 +1,148 @@
+:root {
+    --bg-color: #ffffff;
+    --canvas-bg: #fafafa;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-light: #e2e8f0;
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --surface: #ffffff;
+    --surface-editor: #f8fafc;
+}
+
 body, html {
     margin: 0; padding: 0;
-    height: 100%; font-family: 'Inter', sans-serif;
-    background: #1a1a1a; color: #eee;
+    height: 100%; 
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg-color); 
+    color: var(--text-primary);
 }
 
-.app-container { display: flex; flex-direction: column; height: 100vh; }
+.app-container { 
+    display: flex; 
+    flex-direction: column; 
+    height: 100vh; 
+}
 
 header {
-    padding: 1rem; background: #252525;
+    padding: 1rem 2rem; 
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--border-light);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    z-index: 10;
 }
 
-.actions { display: flex; gap: 10px; }
+header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+}
 
-main { flex: 1; display: flex; overflow: hidden; }
+.actions { 
+    display: flex; 
+    gap: 12px; 
+}
 
-.editor-pane { width: 30%; border-right: 1px solid #333; }
+main { 
+    flex: 1; 
+    display: flex; 
+    overflow: hidden; 
+    background: var(--bg-color);
+}
+
+.editor-pane { 
+    width: 30%; 
+    min-width: 300px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-light);
+    background: var(--surface);
+    box-shadow: 4px 0 15px rgba(0,0,0,0.02);
+    z-index: 5;
+}
 
 textarea {
-    width: 100%; height: 100%; background: #1e1e1e;
-    color: #00ff88; border: none; padding: 20px;
-    font-family: 'Fira Code', monospace; font-size: 14px; outline: none; resize: none;
+    flex: 1;
+    width: 100%; 
+    background: var(--surface-editor);
+    color: var(--text-primary); 
+    border: 1px solid var(--border-light); 
+    border-radius: 12px;
+    padding: 1.5rem;
+    font-family: 'Fira Code', monospace; 
+    font-size: 14px; 
+    line-height: 1.6;
+    outline: none; 
+    resize: none;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
 }
 
-.preview-pane { flex: 1; background: #1a1a1a; position: relative; overflow: auto; }
+textarea:focus {
+    border-color: var(--primary);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02), 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
 
-/* The styles below are mostly handled via JS, but we can leave link for fallback */
-.link { fill: none; stroke: #444; stroke-width: 2px; }
+.preview-pane { 
+    flex: 1; 
+    background-color: var(--canvas-bg);
+    /* Dot grid pattern */
+    background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+    background-size: 24px 24px;
+    position: relative; 
+    overflow: auto; 
+}
 
+/* Custom Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; border: 2px solid transparent; background-clip: padding-box; }
+
+/* Buttons */
 button {
-    background: #00ff88; color: #000; border: none;
-    padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;
-    transition: background 0.2s, transform 0.1s;
+    background: var(--surface); 
+    color: var(--text-primary); 
+    border: 1px solid var(--border-light);
+    padding: 8px 16px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
 }
 
-button:hover { background: #00cc6a; transform: translateY(-1px); }
-button:active { transform: translateY(1px); }
+button:hover { 
+    background: var(--surface-editor); 
+    border-color: #cbd5e1;
+    transform: translateY(-1px); 
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+button:active { 
+    transform: translateY(1px); 
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Primary style for the first button */
+button#btn-export-png {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+button#btn-export-png:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+/* The styles below are mostly handled via JS */
+.link { fill: none; stroke: #cbd5e1; stroke-width: 1.5px; }

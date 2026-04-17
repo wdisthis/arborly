@@ -69,18 +69,20 @@ function renderTree(data) {
             .attr('y', -15)
             .attr('height', 30)
             .attr('width', d => Math.max(50, d.data.name.length * 8 + 20))
-            .style("fill", d => d._children ? "#005533" : "#1e1e1e")
-            .style("stroke", "#00ff88")
-            .style("stroke-width", "2px")
-            .style("cursor", d => d.children || d._children ? "pointer" : "default");
+            .style("fill", d => d._children ? "#e2e8f0" : "#f1f5f9")
+            .style("stroke", "#cbd5e1")
+            .style("stroke-width", "1px")
+            .style("cursor", d => d.children || d._children ? "pointer" : "default")
+            .style("box-shadow", "0 1px 2px rgba(0,0,0,0.05)");
 
         // Tambahkan text label
         nodeEnter.append('text')
             .attr("dy", ".35em")
             .attr("x", 10)
-            .style("fill", "#ccc")
+            .style("fill", "#0f172a")
             .style("font-size", "14px")
-            .style("font-family", "sans-serif")
+            .style("font-family", "'Plus Jakarta Sans', sans-serif")
+            .style("font-weight", "500")
             .style("cursor", d => d.children || d._children ? "pointer" : "default")
             .text(d => d.data.name);
 
@@ -93,7 +95,7 @@ function renderTree(data) {
 
         nodeUpdate.select('rect.node-rect')
             .attr('width', d => Math.max(50, d.data.name.length * 8 + 20))
-            .style("fill", d => d._children ? "#005533" : "#1e1e1e");
+            .style("fill", d => d._children ? "#e2e8f0" : "#f1f5f9");
 
         // EXIT nodes
         const nodeExit = node.exit().transition()
@@ -115,8 +117,8 @@ function renderTree(data) {
                 return diagonal(o, o);
             })
             .style("fill", "none")
-            .style("stroke", "#444")
-            .style("stroke-width", "2px");
+            .style("stroke", "#cbd5e1")
+            .style("stroke-width", "1.5px");
 
         const linkUpdate = linkEnter.merge(link);
 
