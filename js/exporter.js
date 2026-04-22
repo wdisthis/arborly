@@ -8,14 +8,21 @@ function downloadFile(url, filename) {
     document.body.removeChild(link);
 }
 
+// Common styles for export to ensure visual consistency
+const exportStyles = `
+    text { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500; fill: #0f172a; }
+    .link { fill: none; stroke: #94a3b8; stroke-width: 1.5px; }
+    .node-rect { fill: #f1f5f9; stroke: #cbd5e1; stroke-width: 1px; }
+`;
+
 // Helper: Convert SVG to Canvas natively
 function svgToCanvas(svgElement, callback) {
     // Pastikan namespace ada
     svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     
-    // Set style default untuk text karena font luar mungkin tidak ter-render sempurna
+    // Set style default untuk export
     const style = document.createElement("style");
-    style.innerHTML = "text { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500; fill: #0f172a; }";
+    style.innerHTML = exportStyles;
     svgElement.insertBefore(style, svgElement.firstChild);
 
     const svgData = new XMLSerializer().serializeToString(svgElement);
@@ -91,7 +98,17 @@ document.getElementById('btn-export-svg').addEventListener('click', () => {
     if (!svgElement) return;
 
     svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    
+    // Tambahkan style sebelum ekspor
+    const style = document.createElement("style");
+    style.innerHTML = exportStyles;
+    svgElement.insertBefore(style, svgElement.firstChild);
+
     const svgData = new XMLSerializer().serializeToString(svgElement);
+    
+    // Hapus kembali setelah serialisasi agar tidak mengotori UI
+    svgElement.removeChild(style);
+
     const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     
@@ -119,8 +136,7 @@ document.getElementById('btn-export-html').addEventListener('click', () => {
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh;
         }
-        /* Agar tulisan rapi */
-        text { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500; fill: #0f172a; }
+        ${exportStyles}
     </style>
 </head>
 <body>

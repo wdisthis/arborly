@@ -116,9 +116,9 @@ function renderTree(data) {
                 const o = {x: source.x0, y: source.y0};
                 return diagonal(o, o);
             })
-            .style("fill", "none")
-            .style("stroke", "#cbd5e1")
-            .style("stroke-width", "1.5px");
+            .attr("fill", "none")
+            .attr("stroke", "#94a3b8")
+            .attr("stroke-width", "1.5");
 
         const linkUpdate = linkEnter.merge(link);
 
