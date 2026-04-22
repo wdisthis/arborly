@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,15 +26,19 @@
         <main>
             <div class="editor-pane">
                 <div class="sidebar-header">
-                    <h2>Struktur Diagram</h2>
+                    <h2>Diagram Structure</h2>
                     <input type="file" id="file-upload" accept=".txt">
                     <button class="upload-btn" onclick="document.getElementById('file-upload').click()">Upload TXT</button>
                 </div>
-                <textarea id="text-input" placeholder="Tulis struktur di sini...
-Parent
-  Child 1
-    Grandchild
-  Child 2"></textarea>
+                <textarea id="text-input" placeholder="">Arborly
+  Features
+    Easy to Use
+    Multiple Exports
+    Premium Design
+  How to Use
+    Write with Indentation
+    Live Preview
+    Download Results</textarea>
             </div>
             <div class="preview-pane" id="tree-container">
                 </div>
@@ -52,18 +56,18 @@ Parent
             renderTree(treeData);
         });
 
-        // Dukungan Tab untuk indentasi & Enter untuk auto-indent
+        // Tab support for indentation & Enter for auto-indent
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Tab') {
                 e.preventDefault();
                 const start = input.selectionStart;
                 const end = input.selectionEnd;
-                // Masukkan 2 spasi
+                // Insert 2 spaces
                 input.value = input.value.substring(0, start) + "  " + input.value.substring(end);
-                // Kembalikan kursor
+                // Move cursor
                 input.selectionStart = input.selectionEnd = start + 2;
                 
-                // Memicu event input agar tree terupdate
+                // Trigger input event to update tree
                 input.dispatchEvent(new Event('input'));
             } else if (e.key === 'Enter') {
                 e.preventDefault();
@@ -71,7 +75,7 @@ Parent
                 const end = input.selectionEnd;
                 const value = input.value;
                 
-                // Cari indentasi di baris saat ini
+                // Find indentation of current line
                 const lineStart = value.lastIndexOf('\n', start - 1) + 1;
                 const currentLine = value.substring(lineStart, start);
                 const indentMatch = currentLine.match(/^\s*/);
@@ -81,10 +85,32 @@ Parent
                 input.selectionStart = input.selectionEnd = start + 1 + indent.length;
                 
                 input.dispatchEvent(new Event('input'));
+            } else if (e.key === 'Backspace') {
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                const value = input.value;
+                
+                // If no selection and cursor is at least 2 chars in
+                if (start === end && start >= 2) {
+                    const before = value.substring(start - 2, start);
+                    if (before === "  ") {
+                        // Find start of line
+                        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+                        const textBefore = value.substring(lineStart, start);
+                        
+                        // If only spaces before cursor on this line, delete 2 spaces at once
+                        if (textBefore.trim() === "") {
+                            e.preventDefault();
+                            input.value = value.substring(0, start - 2) + value.substring(start);
+                            input.selectionStart = input.selectionEnd = start - 2;
+                            input.dispatchEvent(new Event('input'));
+                        }
+                    }
+                }
             }
         });
 
-        // Dukungan Upload TXT
+        // TXT Upload Support
         document.getElementById('file-upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -94,15 +120,15 @@ Parent
                 input.dispatchEvent(new Event('input'));
             };
             reader.readAsText(file);
-            // Reset input file agar file yang sama bisa diupload ulang
+            // Reset input file so same file can be uploaded again
             e.target.value = '';
         });
 
-        // Render awal jika ada teks bawaan
+        // Initial render
         window.addEventListener('DOMContentLoaded', () => {
             const treeData = parseIndentedText(input.value);
             renderTree(treeData);
         });
     </script>
 </body>
-</html>
+</html>

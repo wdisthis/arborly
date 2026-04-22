@@ -17,16 +17,16 @@ const exportStyles = `
 
 // Helper: Convert SVG to Canvas natively
 function svgToCanvas(svgElement, callback) {
-    // Pastikan namespace ada
+    // Ensure namespace exists
     svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     
-    // Set style default untuk export
+    // Set style default for export
     const style = document.createElement("style");
     style.innerHTML = exportStyles;
     svgElement.insertBefore(style, svgElement.firstChild);
 
     const svgData = new XMLSerializer().serializeToString(svgElement);
-    svgElement.removeChild(style); // Bersihkan style kembali
+    svgElement.removeChild(style); // Clean up style
     
     const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(svgBlob);
@@ -38,7 +38,7 @@ function svgToCanvas(svgElement, callback) {
     img.crossOrigin = "Anonymous";
     img.onload = function() {
         const canvas = document.createElement("canvas");
-        // Gunakan scale 2 untuk resolusi tinggi (Retina)
+        // Use scale 2 for high resolution (Retina)
         const scale = 2;
         canvas.width = width * scale;
         canvas.height = height * scale;
@@ -46,7 +46,7 @@ function svgToCanvas(svgElement, callback) {
         const ctx = canvas.getContext("2d");
         ctx.scale(scale, scale);
         
-        // Background putih
+        // Background white
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, width, height);
         
@@ -77,7 +77,7 @@ document.getElementById('btn-export-pdf').addEventListener('click', () => {
         const imgData = canvas.toDataURL('image/png');
         const { jsPDF } = window.jspdf;
         
-        // Format ukuran ke px aslinya (bukan scaled)
+        // Format size to original pixels (not scaled)
         const origWidth = canvas.width / 2;
         const origHeight = canvas.height / 2;
         
@@ -99,14 +99,14 @@ document.getElementById('btn-export-svg').addEventListener('click', () => {
 
     svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     
-    // Tambahkan style sebelum ekspor
+    // Add style before export
     const style = document.createElement("style");
     style.innerHTML = exportStyles;
     svgElement.insertBefore(style, svgElement.firstChild);
 
     const svgData = new XMLSerializer().serializeToString(svgElement);
     
-    // Hapus kembali setelah serialisasi agar tidak mengotori UI
+    // Remove after serialization to avoid cluttering UI
     svgElement.removeChild(style);
 
     const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
@@ -125,7 +125,7 @@ document.getElementById('btn-export-html').addEventListener('click', () => {
     const svgData = new XMLSerializer().serializeToString(svgElement);
     
     const htmlContent = `<!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Arborly Diagram</title>

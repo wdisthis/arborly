@@ -9,7 +9,7 @@ function renderTree(data) {
     const containerSvg = d3.select("#tree-container").append("svg");
     const gElement = containerSvg.append("g");
 
-    // Gunakan nodeSize agar jarak antar node konstan dan tidak mengecil jika tree membesar
+    // Use nodeSize so distance between nodes is constant
     const treeLayout = d3.tree().nodeSize([60, 250]); 
 
     const root = d3.hierarchy(data);
@@ -21,7 +21,7 @@ function renderTree(data) {
         const nodes = treeData.descendants();
         const links = treeData.links();
 
-        // Hitung batas ukuran tree untuk ukuran SVG dinamis (mencegah terpotong)
+        // Calculate tree bounds for dynamic SVG sizing
         let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
         root.each(d => {
             if (d.x > x1) x1 = d.x;
@@ -60,7 +60,7 @@ function renderTree(data) {
             .attr("transform", d => `translate(${source.y0},${source.x0})`)
             .on('click', click);
 
-        // Tambahkan kotak pembungkus (rounded rectangle)
+        // Add rounded rectangle container
         nodeEnter.append('rect')
             .attr('class', 'node-rect')
             .attr('rx', 6)
@@ -75,7 +75,7 @@ function renderTree(data) {
             .style("cursor", d => d.children || d._children ? "pointer" : "default")
             .style("box-shadow", "0 1px 2px rgba(0,0,0,0.05)");
 
-        // Tambahkan text label
+        // Add text label
         nodeEnter.append('text')
             .attr("dy", ".35em")
             .attr("x", 10)
@@ -113,7 +113,7 @@ function renderTree(data) {
         const linkEnter = link.enter().insert('path', "g")
             .attr("class", "link")
             .attr('d', d => {
-                const o = {x: source.x0, y: source.y0};
+                const o = {x: source.x0, y: source.y0, data: source.data};
                 return diagonal(o, o);
             })
             .attr("fill", "none")
@@ -129,24 +129,24 @@ function renderTree(data) {
         link.exit().transition()
             .duration(500)
             .attr('d', d => {
-                const o = {x: source.x, y: source.y};
+                const o = {x: source.x, y: source.y, data: source.data};
                 return diagonal(o, o);
             })
             .remove();
 
-        // Simpan posisi untuk animasi berikutnya
+        // Save positions for next animation
         nodes.forEach(d => {
             d.x0 = d.x;
             d.y0 = d.y;
         });
 
-        // Buat garis kurva dari kanan kotak parent ke kiri kotak child
+        // Create curve from parent's right to child's left
         function diagonal(s, d) {
-            // Lebar kotak parent
-            const rectWidth = s.data.name ? Math.max(50, s.data.name.length * 8 + 20) : 0;
-            // Garis mulai dari ujung kanan parent
+            // Parent box width
+            const rectWidth = (s.data && s.data.name) ? Math.max(50, s.data.name.length * 8 + 20) : 0;
+            // Line starts from parent's right edge
             const sourceY = s.y + rectWidth;
-            // Garis berujung di ujung kiri child
+            // Line ends at child's left edge
             const targetY = d.y;
             
             return `M ${sourceY} ${s.x}
@@ -155,7 +155,7 @@ function renderTree(data) {
                       ${targetY} ${d.x}`;
         }
 
-        // Fungsi klik untuk expand/collapse
+        // Expand/collapse on click
         function click(event, d) {
             if (d.children) {
                 d._children = d.children;
@@ -169,4 +169,4 @@ function renderTree(data) {
     }
 
     update(root);
-}
+}
