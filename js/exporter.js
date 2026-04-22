@@ -1,3 +1,11 @@
+// Helper: Generate dynamic filename with timestamp
+function generateFilename(extension) {
+    const now = new Date();
+    const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const time = now.toTimeString().split(' ')[0].replace(/:/g, ''); // HHMMSS
+    return `arborly-${date}-${time}.${extension}`;
+}
+
 // Helper function to trigger download
 function downloadFile(url, filename) {
     const link = document.createElement('a');
@@ -17,16 +25,16 @@ const exportStyles = `
 
 // Helper: Convert SVG to Canvas natively
 function svgToCanvas(svgElement, callback) {
-    // Pastikan namespace ada
+    // Ensure namespace exists
     svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     
-    // Set style default untuk export
+    // Set style default for export
     const style = document.createElement("style");
     style.innerHTML = exportStyles;
     svgElement.insertBefore(style, svgElement.firstChild);
 
     const svgData = new XMLSerializer().serializeToString(svgElement);
-    svgElement.removeChild(style); // Bersihkan style kembali
+    svgElement.removeChild(style); // Clean up style
     
     const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(svgBlob);
@@ -38,7 +46,7 @@ function svgToCanvas(svgElement, callback) {
     img.crossOrigin = "Anonymous";
     img.onload = function() {
         const canvas = document.createElement("canvas");
-        // Gunakan scale 2 untuk resolusi tinggi (Retina)
+        // Use scale 2 for high resolution (Retina)
         const scale = 2;
         canvas.width = width * scale;
         canvas.height = height * scale;
@@ -46,7 +54,7 @@ function svgToCanvas(svgElement, callback) {
         const ctx = canvas.getContext("2d");
         ctx.scale(scale, scale);
         
-        // Background putih
+        // Background white
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, width, height);
         
@@ -64,32 +72,54 @@ document.getElementById('btn-export-png').addEventListener('click', () => {
     if (!svgElement) return;
 
     svgToCanvas(svgElement, (canvas) => {
-        downloadFile(canvas.toDataURL("image/png"), 'arborly-diagram.png');
+        downloadFile(canvas.toDataURL("image/png"), generateFilename('png'));
     });
 });
 
-// 2. Export PDF
-document.getElementById('btn-export-pdf').addEventListener('click', () => {
-    const svgElement = document.querySelector('#tree-container svg');
-    if (!svgElement) return;
+// 2. Export PDF (Vector based)
+document.getElementById('btn-export-pdf').addEventListener('click', async () => {
+    try {
+        const svgElement = document.querySelector('#tree-container svg');
+        if (!svgElement) return;
 
-    svgToCanvas(svgElement, (canvas) => {
-        const imgData = canvas.toDataURL('image/png');
+        // Use a clone to avoid styling the actual UI
+        const clonedSvg = svgElement.cloneNode(true);
+        clonedSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        
+        // Embed styles for vector export
+        const style = document.createElement("style");
+        style.innerHTML = exportStyles;
+        clonedSvg.insertBefore(style, clonedSvg.firstChild);
+
+        const width = parseFloat(svgElement.getAttribute("width")) || 1000;
+        const height = parseFloat(svgElement.getAttribute("height")) || 1000;
+
         const { jsPDF } = window.jspdf;
-        
-        // Format ukuran ke px aslinya (bukan scaled)
-        const origWidth = canvas.width / 2;
-        const origHeight = canvas.height / 2;
-        
         const pdf = new jsPDF({
-            orientation: origWidth > origHeight ? 'landscape' : 'portrait',
+            orientation: width > height ? 'landscape' : 'portrait',
             unit: 'px',
-            format: [origWidth, origHeight]
+            format: [width, height]
         });
+
+        // Try different ways the library might be exposed
+        const svg2pdfFn = window.svg2pdf?.svg2pdf || window.svg2pdf;
         
-        pdf.addImage(imgData, 'PNG', 0, 0, origWidth, origHeight);
-        pdf.save('arborly-diagram.pdf');
-    });
+        if (typeof svg2pdfFn !== 'function') {
+            throw new Error("svg2pdf library not loaded correctly");
+        }
+
+        await svg2pdfFn(clonedSvg, pdf, {
+            x: 0,
+            y: 0,
+            width: width,
+            height: height
+        });
+
+        pdf.save(generateFilename('pdf'));
+    } catch (err) {
+        console.error("PDF Export Error:", err);
+        alert("Failed to export PDF: " + err.message);
+    }
 });
 
 // 3. Export SVG
@@ -99,20 +129,20 @@ document.getElementById('btn-export-svg').addEventListener('click', () => {
 
     svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     
-    // Tambahkan style sebelum ekspor
+    // Add style before export
     const style = document.createElement("style");
     style.innerHTML = exportStyles;
     svgElement.insertBefore(style, svgElement.firstChild);
 
     const svgData = new XMLSerializer().serializeToString(svgElement);
     
-    // Hapus kembali setelah serialisasi agar tidak mengotori UI
+    // Remove after serialization to avoid cluttering UI
     svgElement.removeChild(style);
 
     const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     
-    downloadFile(url, 'arborly-diagram.svg');
+    downloadFile(url, generateFilename('svg'));
     URL.revokeObjectURL(url);
 });
 
@@ -125,7 +155,7 @@ document.getElementById('btn-export-html').addEventListener('click', () => {
     const svgData = new XMLSerializer().serializeToString(svgElement);
     
     const htmlContent = `<!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Arborly Diagram</title>
@@ -147,6 +177,6 @@ document.getElementById('btn-export-html').addEventListener('click', () => {
     const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     
-    downloadFile(url, 'arborly-diagram.html');
+    downloadFile(url, generateFilename('html'));
     URL.revokeObjectURL(url);
 });
