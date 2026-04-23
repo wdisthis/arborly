@@ -17,6 +17,7 @@
         <header>
             <h1>Arborly</h1>
             <div class="actions">
+                <button id="btn-toggle-orientation">Vertical View</button>
                 <button id="btn-export-png">PNG</button>
                 <button id="btn-export-pdf">PDF</button>
                 <button id="btn-export-svg">SVG</button>
@@ -54,7 +55,17 @@
         
         input.addEventListener('input', () => {
             const treeData = parseIndentedText(input.value);
-            renderTree(treeData);
+            renderTree(treeData, isVertical);
+        });
+
+        // Toggle Orientation
+        let isVertical = false;
+        const btnToggle = document.getElementById('btn-toggle-orientation');
+        btnToggle.addEventListener('click', () => {
+            isVertical = !isVertical;
+            btnToggle.textContent = isVertical ? "Horizontal View" : "Vertical View";
+            const treeData = parseIndentedText(input.value);
+            renderTree(treeData, isVertical);
         });
 
         // Tab support for indentation & Enter for auto-indent
@@ -128,7 +139,7 @@
         // Initial render
         window.addEventListener('DOMContentLoaded', () => {
             const treeData = parseIndentedText(input.value);
-            renderTree(treeData);
+            renderTree(treeData, isVertical);
         });
     </script>
 </body>
